@@ -69,7 +69,7 @@ export const getPublishedImages = async (req, res) => {
       {
         $match: {
           "messages.isImage": true,
-          "messages.isPublihsed": true,
+          "messages.isPublished": true,
         },
       },
       {
@@ -80,6 +80,9 @@ export const getPublishedImages = async (req, res) => {
         },
       },
     ]);
+
+    // console.log("Chat:", Chat.aggregate);
+    // console.log("publishedImageMessages:", publishedImageMessages);
 
     res.json({ success: true, images: publishedImageMessages.reverse() });
   } catch (error) {
