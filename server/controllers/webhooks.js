@@ -15,13 +15,13 @@ export const stripeWebhooks = async (request, response) => {
       process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (error) {
-    return res.status(400).send(`Webhook Error: ${error.message}`);
+    return response.status(400).send(`Webhook Error: ${error.message}`);
   }
 
   try {
     switch (event.type) {
       case "payment_intent.succeeded": {
-        const paymentIntent = enevt.data.object;
+        const paymentIntent = event.data.object;
         const sessionList = await stripe.checkout.sessions.list({
           payment_intent: paymentIntent.id,
         });
@@ -41,7 +41,7 @@ export const stripeWebhooks = async (request, response) => {
             { $inc: { credits: transaction.credits } },
           );
 
-          // Update credit payment atatus
+          // Update credit payment status
           transaction.isPaid = true;
           await transaction.save();
         } else {
