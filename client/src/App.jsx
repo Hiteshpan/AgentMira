@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import { Route, Routes, useLocation } from "react-router-dom";
 import ChatBox from "./components/ChatBox";
-import Credits from "./pages/Credits";
-import Community from "./pages/Community";
 import { assets } from "./assets/assets";
 import "./assets/prism.css";
 import Loading from "./pages/Loading";
 import { useAppContext } from "./context/AppContext";
 import Login from "./pages/Login";
 import { Toaster } from "react-hot-toast";
+import SavedProperties from "./pages/SavedProperties";
 
 const App = () => {
   const { user, loadingUser } = useAppContext();
@@ -36,8 +35,7 @@ const App = () => {
             <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
             <Routes>
               <Route path="/" element={<ChatBox />} />
-              <Route path="/credits" element={<Credits />} />
-              <Route path="/community" element={<Community />} />
+              <Route path="/saved-properties" element={<SavedProperties  />} />
             </Routes>
           </div>
         </div>

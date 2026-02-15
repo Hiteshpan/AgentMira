@@ -3,6 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import { assets } from "../assets/assets";
 import moment from "moment";
 import toast from "react-hot-toast";
+import { Bookmark } from "lucide-react";
 
 const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
   const {
@@ -56,12 +57,18 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
     <div
       className={`flex flex-col h-screen min-w-72 p-5 dark:bg-gradient-to-b from-[#242124]/30 to-[#000000]/30 border-r border-[#80609F]/30 backdrop-blur-3xl transition-all duration-500 max-md:absolute left-0 z-1 ${!isMenuOpen && "max-md:-translate-x-full"}`}
     >
-      {/* {Logo} */}
-      <img
-        src={theme === "dark" ? assets.logo_full : assets.logo_full_dark}
-        alt=""
-        className="w-full max-w-48"
-      />
+      {/* Logo with name */}
+      <div className="flex items-center gap-3">
+        <img src="/favicon.svg" alt="Agent Mira Logo" className="w-12 h-12" />
+        <div className="flex flex-col">
+          <span className="text-2xl font-bold text-gray-800 dark:text-white">
+            Agent Mira
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-300">
+            Real Estate AI
+          </span>
+        </div>
+      </div>
 
       {/* New Chat Button */}
       <button
@@ -128,37 +135,19 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
           ))}
       </div>
 
-      {/* Community Images */}
+      {/* Saved Properties */}
       <div
         onClick={() => {
-          navigate("/community");
-          setIsMenuOpen(false);
-        }}
-        className="flex items-center gap-2 p-3 mt-4 border border-gray-300 dark:border-white/15 rounded-md cursor-pointer hover:scale-103 transition-all"
-      >
-        <img
-          src={assets.gallery_icon}
-          className="w-4.5 not-dark:invert"
-          alt=""
-        />
-        <div className="flex flex-col text-sm">
-          <p>Community Images</p>
-        </div>
-      </div>
-
-      {/* Credit Purchase Option */}
-      <div
-        onClick={() => {
-          navigate("/credits");
+          navigate("/saved-properties");
           setIsMenuOpen(false);
         }}
         className="flex items-center gap-2 p-3 mt-1.5 border border-gray-300 dark:border-white/15 rounded-md cursor-pointer hover:scale-103 transition-all"
       >
-        <img src={assets.diamond_icon} className="w-4.5 dark:invert" alt="" />
+        <Bookmark size={18} className={"fill-black text-black"} />
         <div className="flex flex-col text-sm">
-          <p>Credits : {user?.credits}</p>
-          <p className="text-xs text-gray-400">
-            Purchase credits to use quickgpt
+          <p>Saved Properties</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            View and manage your bookmarks
           </p>
         </div>
       </div>

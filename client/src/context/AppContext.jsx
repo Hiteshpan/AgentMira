@@ -17,6 +17,23 @@ export const AppContextProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [loadingUser, setLoadingUser] = useState(true);
 
+  const [savedIds, setSavedIds] = useState([]);
+
+  const fetchSavedProperties = async () => {
+    try {
+      const { data } = await axios.get("/api/property/saved", {
+        headers: { Authorization: token },
+      });
+
+      if (data.success) {
+        // setSavedIds(data.properties.map((p) => p.propertyId));
+        setSavedIds(data.properties.map((p) => String(p.propertyId)));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const fetchUser = async () => {
     // setUser(dummyUserData);
     try {
@@ -88,9 +105,11 @@ export const AppContextProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       fetchUsersChats();
+      fetchSavedProperties(); // 👈 ADD THIS
     } else {
       setChats([]);
       setSelectedChat(null);
+      setSavedIds([]); // reset on logout
     }
   }, [user]);
 
@@ -119,7 +138,10 @@ export const AppContextProvider = ({ children }) => {
     fetchUsersChats,
     token,
     setToken,
-    axios
+    axios,
+    savedIds,
+    setSavedIds,
+    fetchSavedProperties,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

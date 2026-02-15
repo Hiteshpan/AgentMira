@@ -3,6 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import { assets } from "../assets/assets";
 import Message from "./Message";
 import toast from "react-hot-toast";
+import PropertyList from "./PropertyList";
 
 const ChatBox = () => {
   const containerRef = useRef(null);
@@ -15,6 +16,37 @@ const ChatBox = () => {
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState("text");
   const [isPublished, setIsPublished] = useState(false);
+
+  const [selectedProperties, setSelectedProperties] = useState([]);
+  const [showCompare, setShowCompare] = useState(false);
+
+  const handleSelectProperty = (property) => {
+    setSelectedProperties((prev) => {
+      const exists = prev.some((p) => p.id === property.id);
+
+      if (exists) {
+        return prev.filter((p) => p.id !== property.id);
+      }
+
+      return [...prev, property];
+    });
+  };
+
+  const handleCompare = () => {
+    if (selectedProperties.length < 2) return;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        type: "comparison_table",
+        properties: selectedProperties,
+        timestamp: Date.now(),
+      },
+    ]);
+
+    setSelectedProperties([]);
+  };
 
   const onSubmit = async (e) => {
     try {
@@ -35,20 +67,13 @@ const ChatBox = () => {
       ]);
 
       const { data } = await axios.post(
-        `/api/message/${mode}`,
+        `/api/message/text`,
         { chatId: selectedChat._id, prompt, isPublished },
         { headers: { Authorization: token } },
       );
 
       if (data.success) {
         setMessages((prev) => [...prev, data.reply]);
-
-        // decrease credits
-        if (mode === "image") {
-          setUser((prev) => ({ ...prev, credits: prev.credits - 2 }));
-        } else {
-          setUser((prev) => ({ ...prev, credits: prev.credits - 1 }));
-        }
       } else {
         toast.error(data.message);
         setPrompt(promptCopy);
@@ -60,7 +85,7 @@ const ChatBox = () => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (selectedChat) {
       setMessages(selectedChat.messages);
@@ -94,7 +119,13 @@ const ChatBox = () => {
         )}
 
         {messages.map((message, index) => (
-          <Message key={index} message={message} />
+          // <Message key={index} message={message} />
+          <Message
+            key={index}
+            message={message}
+            selectedProperties={selectedProperties}
+            onSelectProperty={handleSelectProperty}
+          />
         ))}
 
         {/* Three Dots Loading */}
@@ -107,17 +138,22 @@ const ChatBox = () => {
         )}
       </div>
 
-      {/* Community Adding Button */}
-      {mode === "image" && (
-        <label className="inline-flex items-center gap-2 mb-3 text-sm mx-auto">
-          <p className="text-xs">Publish Generated Image to Community</p>
-          <input
-            type="checkbox"
-            className="cursor-pointer"
-            checked={isPublished}
-            onChange={(e) => setIsPublished(e.target.checked)}
-          />
-        </label>
+      {selectedProperties.length > 1 && (
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <button
+            onClick={handleCompare}
+            className="flex justify-center items-center p-2 text-white bg-gradient-to-r from-[#A456F7] to-[#3D81F6] text-sm rounded-md cursor-pointer"
+          >
+            Compare ({selectedProperties.length})
+          </button>
+
+          <button
+            onClick={() => setSelectedProperties([])}
+            className="px-4 py-2 border cursor-pointer border-gray-400 rounded-lg text-sm"
+          >
+            Reset
+          </button>
+        </div>
       )}
 
       {/* Prompt Input Box */}
@@ -132,9 +168,6 @@ const ChatBox = () => {
         >
           <option className="dark:bg-purple-900" value="text">
             Text
-          </option>
-          <option className="dark:bg-purple-900" value="image">
-            Image
           </option>
         </select>
         <input
@@ -153,6 +186,13 @@ const ChatBox = () => {
           />
         </button>
       </form>
+
+      {showCompare && (
+        <PropertyList
+          properties={selectedProperties}
+          onClose={() => setShowCompare(false)}
+        />
+      )}
     </div>
   );
 };

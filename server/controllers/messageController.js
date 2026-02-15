@@ -1,21 +1,11 @@
 import Chat from "../models/Chat.js";
-import User from "../models/user.js";
-import axios from "axios";
-import imagekit from "../configs/imageKit.js";
 import openai from "../configs/openai.js";
+import { filterProperties } from "../services/propertyService.js";
 
 // Text-based AI Chat Message Controller
 export const textMessageController = async (req, res) => {
   try {
     const userId = req.user._id;
-
-    // Check credits
-    if (req.user.credits < 1) {
-      return res.json({
-        success: false,
-        message: "You don't have enough credits to use this feature",
-      });
-    }
 
     const { chatId, prompt } = req.body;
 
@@ -27,96 +17,117 @@ export const textMessageController = async (req, res) => {
       isImage: false,
     });
 
+    // const extractionPrompt = `
+    //   You are a real estate filter extractor.
+
+    //   Extract filters from the following user query.
+
+    //   Return ONLY valid JSON in this format:
+
+    //   {
+    //     "location": string | null,
+    //     "maxPrice": number | null,
+    //     "bedrooms": number | null,
+    //     "bathrooms": number | null,
+    //     "minSize": number | null,
+    //     "amenities": string[] | []
+    //   }
+
+    //   If a field is not mentioned, return null or empty array.
+
+    //   User Query: "${prompt}"
+    //   `;
+
+    const extractionPrompt = `
+      You are a real estate assistant.
+      
+      Your job is to extract property search filters ONLY if the query is related to buying, renting, or searching for real estate.
+      
+      If the user query is NOT related to real estate, respond ONLY with this exact JSON:
+      
+      {
+        "notRealEstate": true
+      }
+      
+      Otherwise, extract filters and return ONLY valid JSON in this format:
+      
+      {
+        "location": string | null,
+        "maxPrice": number | null,
+        "bedrooms": number | null,
+        "bathrooms": number | null,
+        "minSize": number | null,
+        "amenities": string[] | []
+      }
+      
+      If a field is not mentioned, return null or empty array.
+      
+      User Query: "${prompt}"
+      `;
+
     const { choices } = await openai.chat.completions.create({
       model: "gemini-3-flash-preview",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      messages: [{ role: "user", content: extractionPrompt }],
     });
 
-    const reply = {
-      ...choices[0].message,
-      timestamp: Date.now(),
-      isImage: false,
-    };
-    res.json({ success: true, reply });
+    let filters = {};
+    let reply = {};
 
-    chat.messages.push(reply);
-    await chat.save();
-    await User.updateOne({ _id: userId }, { $inc: { credits: -1 } });
-
-    // res.json({ success: true, reply });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
-};
-
-// Image Generation Message Controller
-export const imageMessageController = async (req, res) => {
-  try {
-    const userId = req.user._id;
-
-    // Check credits
-    if (req.user.credits < 2) {
-      return res.json({
-        success: false,
-        message: "You don't have enough credits to use this feature",
-      });
+    try {
+      filters = JSON.parse(choices[0].message.content);
+    } catch (err) {
+      filters = {};
     }
 
-    const { prompt, chatId, isPublished } = req.body;
+    if (filters.notRealEstate) {
+      reply = {
+        role: "assistant",
+        content:
+          "I can only assist with real estate related queries like buying, renting, or searching for properties.",
+        timestamp: Date.now(),
+      };
 
-    // Find Chat
-    const chat = await Chat.findOne({ userId, _id: chatId });
+      chat.messages.push(reply);
+      await chat.save();
 
-    // Push user message
-    chat.messages.push({
-      role: "user",
-      content: prompt,
-      timestamp: Date.now(),
-      isImage: false,
-    });
+      return res.json({ success: true, reply });
+    }
 
-    // Encode the prompt
-    const encodedPrompt = encodeURIComponent(prompt);
+    // if (!filters.location) {
+    //   const reply = {
+    //     role: "assistant",
+    //     content: "Which location are you looking for?",
+    //     timestamp: Date.now(),
+    //   };
 
-    // Construct Imagekit AI generation URL
-    const generatedImageURL = `${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt-${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,h-800`;
+    //   return res.json({ success: true, reply });
+    // }
 
-    // Trigger generation by fetching from ImageKit
-    const aiImageResponse = await axios.get(generatedImageURL, {
-      responseType: "arraybuffer",
-    });
+    const filteredProperties = filterProperties(filters);
 
-    // Convert to Base64
-    const base64Image = `data:image/png;base64,${Buffer.from(aiImageResponse.data, "binary").toString("base64")}`;
+    if (filteredProperties.length === 0) {
+      reply = {
+        role: "assistant",
+        content:
+          "No properties found matching your criteria. Try adjusting filters.",
+        timestamp: Date.now(),
+      };
+    } else {
+      reply = {
+        role: "assistant",
+        type: "property_cards",
+        properties: filteredProperties,
+        timestamp: Date.now(),
+      };
+    }
 
-    // Upload to ImageKit Media Library
-    const uploadResponse = await imagekit.upload({
-      file: base64Image,
-      fileName: `${Date.now()}.png`,
-      folder: "quickgpt",
-    });
+    console.log("choices:", choices);
+    console.log("filters:", filters);
 
-    const reply = {
-      role: "assistant",
-      content: uploadResponse.url,
-      timestamp: Date.now(),
-      isImage: true,
-      isPublished,
-    };
-    console.log("reply:", reply);
     res.json({ success: true, reply });
 
     chat.messages.push(reply);
     await chat.save();
-
-    console.log("chat:", chat);
-
-    await User.updateOne({ _id: userId }, { $inc: { credits: -2 } });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }

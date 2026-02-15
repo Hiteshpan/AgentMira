@@ -7,11 +7,11 @@ const ChatSchema = new mongoose.Schema(
     name: { type: String, required: true },
     messages: [
       {
-        isImage: { type: Boolean, required: true },
-        isPublished: { type: Boolean, default: false },
-        role: { type: String, default: true },
-        content: { type: String, default: true },
-        timestamp: { type: Number, default: true },
+        role: { type: String, required: true },
+        type: { type: String, default: "text" }, // 👈 ADD THIS
+        content: { type: mongoose.Schema.Types.Mixed }, // 👈 IMPORTANT
+        properties: { type: Array }, // 👈 for property cards
+        timestamp: { type: Number, required: true },
       },
     ],
   },
