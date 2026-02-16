@@ -13,6 +13,7 @@ const generateToken = (id) => {
 // API to register user
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
+  console.log("request body:", req.body);
 
   try {
     const userExists = await User.findOne({ email });
@@ -36,6 +37,7 @@ export const loginUser = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
+    console.log("user email:", user);
 
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
@@ -56,35 +58,6 @@ export const getUser = async (req, res, next) => {
   try {
     const user = req.user;
     return res.json({ success: true, user });
-  } catch (error) {
-    return res.json({ success: false, message: error.message });
-  }
-};
-
-// API to get published images
-export const getPublishedImages = async (req, res) => {
-  try {
-    const publishedImageMessages = await Chat.aggregate([
-      { $unwind: "$messages" },
-      {
-        $match: {
-          "messages.isImage": true,
-          "messages.isPublished": true,
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          imageUrl: "$messages.content",
-          userName: "$userName",
-        },
-      },
-    ]);
-
-    // console.log("Chat:", Chat.aggregate);
-    // console.log("publishedImageMessages:", publishedImageMessages);
-
-    res.json({ success: true, images: publishedImageMessages.reverse() });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
