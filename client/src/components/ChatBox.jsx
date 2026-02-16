@@ -106,14 +106,29 @@ const ChatBox = () => {
       {/* Chat Message */}
       <div ref={containerRef} className="flex-1 mb-5 overflow-y-scroll">
         {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center gap-2 text-primary">
-            <img
+          <div className="h-full flex flex-col items-center justify-center text-primary">
+            {/* <img
               src={theme === "dark" ? assets.logo_full : assets.logo_full_dark}
               alt=""
               className="w-full max-w-56 sm:max-w-68"
-            />
-            <p className="mt-5 text-4xl sm:text-6xl text-center text-gray-400 dark:textwhite">
-              Ask me anything
+            /> */}
+            <div className="flex items-center gap-3">
+              <img
+                src="/favicon.svg"
+                alt="Agent Mira Logo"
+                className="w-18 h-18"
+              />
+              <div className="flex flex-col">
+                <span className="text-4xl font-bold text-gray-800 dark:text-white">
+                  Agent Mira
+                </span>
+                <span className="text-xl text-purple-700 dark:text-purple-300">
+                  Real Estate AI
+                </span>
+              </div>
+            </div>
+            <p className="mt-5 text-4xl sm:text-4xl text-center text-gray-400 dark:textwhite">
+              Ask me anything about <span className="text-purple-700 dark:text-purple-300">Real-Estate</span>
             </p>
           </div>
         )}

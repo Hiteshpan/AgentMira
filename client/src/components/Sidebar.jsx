@@ -64,7 +64,7 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
           <span className="text-2xl font-bold text-gray-800 dark:text-white">
             Agent Mira
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-300">
+          <span className="text-sm text-purple-700 dark:text-purple-300">
             Real Estate AI
           </span>
         </div>
@@ -143,7 +143,7 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
         }}
         className="flex items-center gap-2 p-3 mt-1.5 border border-gray-300 dark:border-white/15 rounded-md cursor-pointer hover:scale-103 transition-all"
       >
-        <Bookmark size={18} className={"fill-black text-black"} />
+        <Bookmark size={18} className={"fill-black text-black dark:text-white dark:fill-white"} />
         <div className="flex flex-col text-sm">
           <p>Saved Properties</p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
