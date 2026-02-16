@@ -94,28 +94,47 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
       {chats?.length > 0 && <p className="mt-4 text-sm">Recent Chats</p>}
       <div className="flex-1 overflow-y-scroll mt-2 text-sm space-y-2">
         {chats
-          .filter((chat) =>
-            chat?.messages[0]
-              ? chat?.messages[0]?.content
-                  .toLowerCase()
-                  .includes(search.toLowerCase())
-              : chat?.name.toLowerCase().includes(search.toLowerCase()),
-          )
+          .filter((chat) => {
+            const firstMessage = chat?.messages?.[0];
+
+            const textToSearch = firstMessage?.content || chat?.name || "";
+
+            return textToSearch.toLowerCase().includes(search.toLowerCase());
+          })
+
+          // .filter((chat) =>
+          //   chat?.messages[0]
+          //     ? chat?.messages[0]?.content
+          //         .toLowerCase()
+          //         .includes(search.toLowerCase())
+          //     : chat?.name.toLowerCase().includes(search.toLowerCase()),
+          // )
           .map((chat) => (
             <div
               onClick={() => {
                 navigate("/");
-                setSelectedChat(chat);
+                setTimeout(() => {
+                  setSelectedChat(chat);
+                }, 0);
                 setIsMenuOpen(false);
+
+                // setSelectedChat(chat);
               }}
               key={chat._id}
               className="p-2 px-4 dark:bg-[#57317C]/10 border border-gray-300 dark:border-[#80609F]/15 bg-white rounded-md cursor-pointer flex justify-between group"
             >
               <div>
-                <p className="truncate w-full">
-                  {chat.messages.length > 0
-                    ? chat.messages[0].content.slice(0, 32)
+                {/* <p className="truncate w-full">
+                  {chat.messages?.length > 0
+                    ? chat.messages[0]?.content.slice(0, 28)
                     : chat.name}
+                </p> */}
+                <p className="truncate w-full">
+                  {(
+                    chat.messages?.[0]?.content ||
+                    chat.name ||
+                    "New Chat"
+                  ).slice(0, 28)}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-[#B1A6C0]">
                   {moment(chat.updatedAt).fromNow()}
@@ -143,7 +162,10 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
         }}
         className="flex items-center gap-2 p-3 mt-1.5 border border-gray-300 dark:border-white/15 rounded-md cursor-pointer hover:scale-103 transition-all"
       >
-        <Bookmark size={18} className={"fill-black text-black dark:text-white dark:fill-white"} />
+        <Bookmark
+          size={18}
+          className={"fill-black text-black dark:text-white dark:fill-white"}
+        />
         <div className="flex flex-col text-sm">
           <p>Saved Properties</p>
           <p className="text-xs text-gray-500 dark:text-gray-400">

@@ -8,7 +8,8 @@ import PropertyList from "./PropertyList";
 const ChatBox = () => {
   const containerRef = useRef(null);
 
-  const { selectedChat, theme, user, axios, token, setUser } = useAppContext();
+  const { selectedChat, theme, user, axios, token, setUser, setChats } =
+    useAppContext();
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -74,6 +75,18 @@ const ChatBox = () => {
 
       if (data.success) {
         setMessages((prev) => [...prev, data.reply]);
+
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat._id === selectedChat._id
+              ? {
+                  ...chat,
+                  messages: [...chat.messages, data.reply],
+                  updatedAt: new Date(),
+                }
+              : chat,
+          ),
+        );
       } else {
         toast.error(data.message);
         setPrompt(promptCopy);
@@ -128,7 +141,10 @@ const ChatBox = () => {
               </div>
             </div>
             <p className="mt-5 text-4xl sm:text-4xl text-center text-gray-400 dark:textwhite">
-              Ask me anything about <span className="text-purple-700 dark:text-purple-300">Real-Estate</span>
+              Ask me anything about{" "}
+              <span className="text-purple-700 dark:text-purple-300">
+                Real-Estate
+              </span>
             </p>
           </div>
         )}
