@@ -53,7 +53,7 @@ const PropertyCard = ({ property, isSelected, onSelect }) => {
       }`}
     >
       {/* Image */}
-      <div className="relative h-60 overflow-hidden">
+      <div className="relative h-56 overflow-hidden">
         <img
           src={property.image_url}
           alt={property.title}

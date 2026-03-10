@@ -58,7 +58,7 @@ const SavedProperties = () => {
   // }, [search]);
 
   return (
-    <div className="min-h-screen w-full px-6 md:px-16 py-10">
+    <div className="min-h-screen w-full px-6 md:px-16 py-5">
       {/* Title */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate("/")} className="cursor-pointer">
@@ -92,7 +92,7 @@ const SavedProperties = () => {
         <p className="text-gray-500">No saved properties found.</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid relative grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {properties.map((property) => (
           <PropertyCard
             key={property._id}
